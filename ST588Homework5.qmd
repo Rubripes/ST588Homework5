@@ -1,0 +1,75 @@
+---
+title: "ST588 Homework 5"
+author: "Matt Bray"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+```
+
+## Task 1: Read in the Data and Modify
+
+We'll begin by reading in the Portugese Student data using code supplied by the authors.
+
+```{r}
+d1=read.table("./student-mat.csv",sep=";",header=TRUE)
+d2=read.table("./student-por.csv",sep=";",header=TRUE)
+
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+print(nrow(d3)) # 382 students
+
+head(d3)
+str(d3)
+```
+
+Next, we'll read in and combine the data using Tidyverse functions and make note of any issues. This will be and inner join on the same variables used by the authors above.
+
+```{r}
+tidyD1<-read_delim("./student-mat.csv", delim=";")
+tidyD2<-read_delim("./student-por.csv", delim=";")
+
+tidyD3<-inner_join(tidyD1, tidyD2, by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+
+print(nrow(tidyD3))
+head(tidyD3)
+str(tidyD3)
+tidyD3
+```
+
+The following warning was returned when doing dplyr inner join:
+
+*Warning: Detected an unexpected many-to-many relationship between `x` and `y`.*
+
+Next, we will do an inner join on all variables except `G1`, `G2`, `G3`, `paid`, and `absences`.
+
+```{r}
+
+varExclude<-c("G1", "G2", "G3", "paid", "absences")
+varBy<-subset(names(tidyD1), !names(tidyD1) %in% varExclude)
+tidyD4<-inner_join(tidyD1, tidyD2, by=varBy)
+tidyD4
+```
+We'll create function to mutate character variables into factors...
+```{r}
+fktRize<-function(x) {
+  x |> mutate(
+    sex=factor(sex, levels=c("M", "F"), labels=c("Male" , "Female")),
+    Mjob=factor(Mjob, levels=c("at_home", "health", "other", "services",     "teacher"), labels=c("Stay at Home Mom", "Health Care Professional", "Other", "Civil Servant", "Teacher")),
+    Fjob=factor(Fjob, levels=c("at_home", "health", "other", "services",     "teacher"), labels=c("Stay at Home Dad", "Health Care Professional", "Other", "Civil Servant", "Teacher")),
+    guardian=factor(guardian, levels=c("mother", "father", "other"), labels=c("Mother", "Father", "Other"))
+  )
+}
+```
+
+Then we'll use that function to do the variable transformations for the two sources datasets (`tidyD1` and `tidyD2`), as well as the Joined Dataset (`tidyD4`).
+```{r}
+#factorize tidyD1
+td1 <- fktRize(tidyD1)
+td2 <- fktRize(tidyD2)
+td4 <- fktRize(tidyD4)
+
+head(td4)
+```
+
