@@ -5,6 +5,13 @@ format: html
 editor: visual
 ---
 
+
+```{r setup, include=FALSE}
+#This code prevents warnings from displaying in rendered output.
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Before beginning and EDA, we'll load the `tidyverse` library.
 ```{r}
 library(tidyverse)
 ```
@@ -51,7 +58,9 @@ varBy<-subset(names(tidyD1), !names(tidyD1) %in% varExclude)
 tidyD4<-inner_join(tidyD1, tidyD2, by=varBy)
 tidyD4
 ```
+
 We'll create function to mutate character variables into factors...
+
 ```{r}
 fktRize<-function(x) {
   x |> mutate(
@@ -64,6 +73,7 @@ fktRize<-function(x) {
 ```
 
 Then we'll use that function to do the variable transformations for the two sources datasets (`tidyD1` and `tidyD2`), as well as the Joined Dataset (`tidyD4`).
+
 ```{r}
 #factorize tidyD1
 td1 <- fktRize(tidyD1)
@@ -71,5 +81,116 @@ td2 <- fktRize(tidyD2)
 td4 <- fktRize(tidyD4)
 
 head(td4)
+td4
+```
+
+
+## Task 2: Summarize the Data (Very Basic EDA)
+Based on the description of the variables on the website, all variables seem to make sense, eg. they are numeric where they should be numeric, character where they should be character, factor where should be factor, and binary where they should be binary.
+
+We'll check for missing values:
+
+```{r}
+colSums(is.na(td4))
+```
+
+We see that there are none! This matches the description of the dataset on the website where we sourced the data.
+
+## We can create contingency tables for the variables that were transformed to factors:
+
+First, we'll create a one-way contingency table to evaluate the counts of males and females from the study:
+
+```{r}
+table(td4$sex)
+```
+
+There are more females than males (174F vs 146M). This could possibly mean there are more females in the general population, but this is only an estimate, and is not strong evidence of this.
+
+Next, we'll create a 2-way contingency table to explore the Mother's Job vs. Primary Guardian and Father's Job vs. Guardian:
+
+```{r}
+table(td4$Mjob, td4$guardian)
+```
+
+```{r}
+table(td4$Fjob, td4$guardian)
+```
+
+This is interesting...most of the mothers (35) that are stay at home moms are the primary guardian, however, most of the fathers (11) who are stay at home dads are not the primary guardian. Perhaps stay at home dad is not the best description! The mother is the primary guardian regardless of job category.
+
+We'll next create a 3-way contingency table to display the same information, with a different code chunk:
+
+```{r}
+table(td4$Fjob, td4$Mjob, td4$guardian)
+```
+
+This 3-way table helps to visualize (poorly, it is hard to follow) the jobs of each parent when we separate the families by who is the primary guardian. We still see the same pattern where the mother is the primary guardian most of the time. The only combinations of parental jobs in which the father is the primary guardian more often is when both parents are healthcare professionals and when the father is a civil servant and the mother is "other". This makes sense because healthcare jobs are notorious for long and odd hours which could disrupt any patterns that would occur with jobs that have "normal" work hours. It is hard to understand the Civil Servant Father/Other mother relationship due to lack of information about the mother's job.
+
+Next, we will create a conditional two-way table. This is will seperate out the 3 way contingency tables above into manageable pieces.
+
+```{r}
+#subset then table
+td5 <- td4 |>
+  filter(guardian=="Mother")
+
+td6 <- td4 |>
+  filter(guardian=="Father")
+
+tbl1 <- table(td5$Fjob, td5$Mjob)
+
+tbl2 <- table(td6$Fjob, td6$Mjob)
+
+tbl1
+tbl2
+
+```
+
+We see the same tables as from the 3-way contingency tables, but they are seperate now, and descriptive text could be placed in between!
+
+We'll create the same tables yet again with a different method, byt subsetting a 3-way table:
+
+```{r}
+threeWay <- table(td4$Fjob, td4$Mjob, td4$guardian)
+
+#mother as guardian
+threeWay[ , ,1]
+#father as guardian
+threeWay[ , ,2]
+#other a guardian
+threeWay[ , ,3]
+```
+
+Next for the factor variables, we'll create 2-way contingency tables using `group_by()`, `summarize()`, and `pivot_wider()`.
+
+```{r}
+td4 |>
+  group_by(guardian, Mjob) |>
+  summarize(count = n()) |>
+  pivot_wider(names_from = Mjob, values_from = count)
+```
+
+It seems that even if the mother in each of these categories for the mother's job, the mother is the primary guardian most of the time.
+
+### Now, we'll plot some of these factors:
+We'll plot stacked bar graphs:
+
+```{r}
+g <- ggplot(data = td4, aes(x = Mjob, fill = guardian))
+g + geom_bar() +
+labs(x = "Mother's Job")+
+scale_fill_discrete("Guardian") +
+scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+ggtitle("Primary Guardian Based on Mother's Job")
+
+```
+
+*This helps the reader to visualize that the mother is the primary guardian most of the time regardless of her profession*
+
+Then, we'll plot a side-by-side bar graph to show the mother is the primary guardian in most cases:
+```{r}
+g2 <- ggplot(data = td4, aes(x = guardian))
+g2 + geom_bar() +
+labs(x = "Guardian") +
+ggtitle("Parent as Primary Guardian")
 ```
 
