@@ -140,7 +140,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Before beginning and EDA, we’ll load the <code>tidyverse</code> library.</p>
+<p>Before beginning any EDA, we’ll load the <code>tidyverse</code> library.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -203,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 #   G3.y &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>We’ll create function to mutate character variables into factors…</p>
+<p>We’ll create function to mutate character variables into factors:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fktRize<span class="ot">&lt;-</span><span class="cf">function</span>(x) {</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
@@ -214,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Then we’ll use that function to do the variable transformations for the two sources datasets (<code>tidyD1</code> and <code>tidyD2</code>), as well as the Joined Dataset (<code>tidyD4</code>).</p>
+<p>Then we’ll use that function to do the variable transformations for the two sources’ datasets (<code>tidyD1</code> and <code>tidyD2</code>), as well as the Joined Dataset (<code>tidyD4</code>).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#factorize tidyD1</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>td1 <span class="ot">&lt;-</span> <span class="fu">fktRize</span>(tidyD1)</span>
@@ -361,7 +361,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>This 3-way table helps to visualize (poorly, it is hard to follow) the jobs of each parent when we separate the families by who is the primary guardian. We still see the same pattern where the mother is the primary guardian most of the time. The only combinations of parental jobs in which the father is the primary guardian more often is when both parents are healthcare professionals and when the father is a civil servant and the mother is “other”. This makes sense because healthcare jobs are notorious for long and odd hours which could disrupt any patterns that would occur with jobs that have “normal” work hours. It is hard to understand the Civil Servant Father/Other mother relationship due to lack of information about the mother’s job.</p>
-<p>Next, we will create a conditional two-way table. This is will seperate out the 3 way contingency tables above into manageable pieces.</p>
+<p>Next, we will create a conditional two-way table. This will seperate out the 3 way contingency tables above into manageable pieces.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#subset then table</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>td5 <span class="ot">&lt;-</span> td4 <span class="sc">|&gt;</span></span>
@@ -486,7 +486,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 # ℹ 1 more variable: Teacher &lt;int&gt;</code></pre>
 </div>
 </div>
-<p>It seems that even if the mother in each of these categories for the mother’s job, the mother is the primary guardian most of the time.</p>
+<p>It seems that in each of these categories for the mother’s job, the mother is the primary guardian most of the time.</p>
 <section id="now-well-plot-some-of-these-factors" class="level3">
 <h3 class="anchored" data-anchor-id="now-well-plot-some-of-these-factors">Now, we’ll plot some of these factors:</h3>
 <p>We’ll plot stacked bar graphs:</p>
@@ -599,7 +599,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>It seems that absences decrease for students who study more, but grades do not necessarily get better with more time spent studying.</p>
-<p>Next we’ll select all numeric values and create correlation matrix for these numeric obserations:</p>
+<p>Next we’ll select all numeric values and create a correlation matrix for these numeric obserations:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>corM <span class="ot">&lt;-</span> td4 <span class="sc">|&gt;</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) </span>
@@ -691,7 +691,7 @@ G2.y        0.545452789 -0.120707273  0.88415041  1.00000000  0.894309821
 G3.y        0.475956497 -0.071452010  0.82541432  0.89430982  1.000000000</code></pre>
 </div>
 </div>
-<p>There really is not much correltion between any variables, except for it seems that later grades are strongly correlated with earlier grades.</p>
+<p>There really is not much correlation between any variables, except for it seems that later grades are strongly correlated with earlier grades.</p>
 <p>Create a histogram for final grade by sex:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(td4, <span class="fu">aes</span>(<span class="at">x =</span> G3.x, <span class="at">color=</span>sex))</span>
@@ -783,7 +783,8 @@ G3.y        0.475956497 -0.071452010  0.82541432  0.89430982  1.000000000</code>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>g7 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(td4, <span class="fu">aes</span>(G3.x, absences.x))</span>
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>g7 <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="fu">vars</span>(Fedu), <span class="fu">vars</span>(Medu))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="fu">vars</span>(Fedu), <span class="fu">vars</span>(Medu)) <span class="sc">+</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Influence of Parents Education Levels on Final Grade relative to Absences"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
