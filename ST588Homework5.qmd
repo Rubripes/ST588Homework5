@@ -5,13 +5,13 @@ format: html
 editor: visual
 ---
 
-
 ```{r setup, include=FALSE}
 #This code prevents warnings from displaying in rendered output.
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
 
-Before beginning and EDA, we'll load the `tidyverse` library.
+Before beginning any EDA, we'll load the `tidyverse` library.
+
 ```{r}
 library(tidyverse)
 ```
@@ -27,8 +27,9 @@ d2=read.table("./student-por.csv",sep=";",header=TRUE)
 d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
 print(nrow(d3)) # 382 students
 
-head(d3)
-str(d3)
+#code used to visualize data.  Commented out to save space in output.
+#head(d3)
+#str(d3)
 ```
 
 Next, we'll read in and combine the data using Tidyverse functions and make note of any issues. This will be and inner join on the same variables used by the authors above.
@@ -40,9 +41,10 @@ tidyD2<-read_delim("./student-por.csv", delim=";")
 tidyD3<-inner_join(tidyD1, tidyD2, by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
 
 print(nrow(tidyD3))
-head(tidyD3)
-str(tidyD3)
-tidyD3
+#code below used to visualize data stucture, commented out to save space in output.
+#head(tidyD3)
+#str(tidyD3)
+#tidyD3
 ```
 
 The following warning was returned when doing dplyr inner join:
@@ -56,10 +58,10 @@ Next, we will do an inner join on all variables except `G1`, `G2`, `G3`, `paid`,
 varExclude<-c("G1", "G2", "G3", "paid", "absences")
 varBy<-subset(names(tidyD1), !names(tidyD1) %in% varExclude)
 tidyD4<-inner_join(tidyD1, tidyD2, by=varBy)
-tidyD4
+head(tidyD4)
 ```
 
-We'll create function to mutate character variables into factors...
+We'll create function to mutate character variables into factors:
 
 ```{r}
 fktRize<-function(x) {
@@ -72,7 +74,7 @@ fktRize<-function(x) {
 }
 ```
 
-Then we'll use that function to do the variable transformations for the two sources datasets (`tidyD1` and `tidyD2`), as well as the Joined Dataset (`tidyD4`).
+Then we'll use that function to do the variable transformations for the two sources' datasets (`tidyD1` and `tidyD2`), as well as the Joined Dataset (`tidyD4`).
 
 ```{r}
 #factorize tidyD1
@@ -81,11 +83,11 @@ td2 <- fktRize(tidyD2)
 td4 <- fktRize(tidyD4)
 
 head(td4)
-td4
+#td4
 ```
 
-
 ## Task 2: Summarize the Data (Very Basic EDA)
+
 Based on the description of the variables on the website, all variables seem to make sense, eg. they are numeric where they should be numeric, character where they should be character, factor where should be factor, and binary where they should be binary.
 
 We'll check for missing values:
@@ -94,7 +96,7 @@ We'll check for missing values:
 colSums(is.na(td4))
 ```
 
-We see that there are none! This matches the description of the dataset on the website where we sourced the data.
+We see that there are no missing values! This matches the description of the dataset on the website where we sourced the data.
 
 ## We can create contingency tables for the variables that were transformed to factors:
 
@@ -126,7 +128,7 @@ table(td4$Fjob, td4$Mjob, td4$guardian)
 
 This 3-way table helps to visualize (poorly, it is hard to follow) the jobs of each parent when we separate the families by who is the primary guardian. We still see the same pattern where the mother is the primary guardian most of the time. The only combinations of parental jobs in which the father is the primary guardian more often is when both parents are healthcare professionals and when the father is a civil servant and the mother is "other". This makes sense because healthcare jobs are notorious for long and odd hours which could disrupt any patterns that would occur with jobs that have "normal" work hours. It is hard to understand the Civil Servant Father/Other mother relationship due to lack of information about the mother's job.
 
-Next, we will create a conditional two-way table. This is will seperate out the 3 way contingency tables above into manageable pieces.
+Next, we will create a conditional two-way table. This will seperate out the 3 way contingency tables above into manageable pieces.
 
 ```{r}
 #subset then table
@@ -169,9 +171,10 @@ td4 |>
   pivot_wider(names_from = Mjob, values_from = count)
 ```
 
-It seems that even if the mother in each of these categories for the mother's job, the mother is the primary guardian most of the time.
+It seems that in each of these categories for the mother's job, the mother is the primary guardian most of the time.
 
 ### Now, we'll plot some of these factors:
+
 We'll plot stacked bar graphs:
 
 ```{r}
@@ -183,14 +186,143 @@ scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
 ggtitle("Primary Guardian Based on Mother's Job")
 
 ```
+The mother is clearly the guardian in most cases regardless of the mother's job!
+
 
 *This helps the reader to visualize that the mother is the primary guardian most of the time regardless of her profession*
 
 Then, we'll plot a side-by-side bar graph to show the mother is the primary guardian in most cases:
+
 ```{r}
 g2 <- ggplot(data = td4, aes(x = guardian))
 g2 + geom_bar() +
 labs(x = "Guardian") +
 ggtitle("Parent as Primary Guardian")
 ```
+This bar graph makes it even more clear that the mother is most often the primary caretaker.
+
+
+## Numeric Variables
+
+First, we'll calculate measures of center and spread (mean and standard deviation) for three numberic variables grouped by `sex`.
+```{r}
+varChoice <- c("age", "absences.x", "G3.x")
+td4 |>
+  summarize(across(varChoice, 
+                   list("mean" = ~ mean(.x, na.rm = TRUE), "sd" = ~ sd(.x, na.rm = TRUE)), .names = "{.fn}_{.col}"))
+```
+
+
+
+
+Next, we'll subset by school (GP) and calculate the same summaries:
+```{r}
+varChoice <- c("age", "absences.x", "G3.x")
+GP <- td4 |>
+  filter(school == "GP") |>
+  summarize(across(varChoice, 
+                   list("mean" = ~ mean(.x, na.rm = TRUE), "sd" = ~ sd(.x, na.rm = TRUE)), .names = "{.fn}_{.col}"))
+GP
+```
+The statistics appear, on the surface, to be similar to the pooled statistics for both schools.
+
+
+Next, we'll group by `sex` and calculate the same stats as for `GP`.
+```{r}
+varChoice <- c("age", "absences.x", "G3.x")
+GPsex <- td4 |>
+  filter(school == "GP") |>
+  group_by(sex) |>
+  summarize(across(varChoice, 
+                   list("mean" = ~ mean(.x, na.rm = TRUE), "sd" = ~ sd(.x, na.rm = TRUE)), .names = "{.fn}_{.col}"))
+GPsex
+```
+Males seem to have fewer absences and higher final grades.
+
+
+Next, we'll calculate the same stats across both `sex` and `studytime`:
+
+```{r}
+varChoice <- c("age", "absences.x", "G3.x")
+GPsexT <- td4 |>
+  filter(school == "GP") |>
+  group_by(sex, studytime) |>
+  summarize(across(varChoice, 
+                   list("mean" = ~ mean(.x, na.rm = TRUE), "sd" = ~ sd(.x, na.rm = TRUE)), .names = "{.fn}_{.col}"))
+GPsexT
+```
+It seems that absences decrease for students who study more, but grades do not necessarily get better with more time spent studying.
+
+
+Next we'll select all numeric values and create a correlation matrix for these numeric obserations:
+```{r}
+corM <- td4 |>
+  select(where(is.numeric)) 
+  cor(corM)
+```
+There really is not much correlation between any variables, except for it seems that later grades are strongly correlated with earlier grades.  
+
+Create a histogram for final grade by sex:
+```{r}
+g1 <- ggplot(td4, aes(x = G3.x, color=sex))
+g1 + geom_histogram(sex="Male",) +
+  geom_histogram(sex="Female")
+```
+This is a little difficult to understand and seems to contradict the counts of each sex.  It looks like there are more final grades in total for males than for females, but that can't be true since there are more females than males.  It is probably because the bin width distorts the view.
+
+Next we'll plot kernal density plot for the same data as above, final grades for males vs. females:
+```{r}
+g2 <- ggplot(td4, aes(x = G3.x, color=sex))
+g2 + geom_density(kernal="gaussian", sex="Male",) +
+  geom_density(kernal="gaussian", sex="Female")
+```
+This makes more sense, as the area under `Female` appears that it could be larger than the area under `Male`.  It seems like most males get higher grades than females, but not by much.
+
+
+Next we'll plot box plots of the same comparison of grades for females vs. males.
+```{r}
+g3 <- ggplot(td4, aes(x = G3.x, color=sex))
+g3 + geom_boxplot(sex="Male")
+```
+Some students appear to have either not received a final grade, or did very poorly, for both males and females (outliers at 0).
+
+Next, we'll create two scatterplots relating G3.x to other numeric variables. First, we'll plot `studytime` by `G3.x`:
+```{r}
+g4 <- ggplot((td4), aes(x = G3.x, y = studytime, color = sex))
+g4 + geom_point() +
+  geom_jitter() +
+  labs(title="Final Grades relative to Study Time by Sex")
+```
+This is hard to make sense of visually, there is a lot going on.  Perhaps a regression line would make this easier to understand.
+
+
+Then we'll plot `absences.x` by `G3.x`:
+```{r}
+g5 <- ggplot((td4), aes(x = G3.x, y = absences.x, color = sex))
+g5 + geom_point() +
+  geom_jitter() +
+  labs(title="Final Grades relative to Absences by Sex")
+```
+Higher grades appear to be achieved by students who have fewer absences for both sexes, in general.
+
+
+Next, we'll recreate the graph above and use faceting to seperate by `school`:
+```{r}
+g6 <- ggplot((td4), aes(x = G3.x, y = absences.x, color = sex))
+g6 + geom_point() +
+  geom_jitter() +
+  labs(title="Final Grades relative to Absences by Sex at Each School") +
+  facet_wrap(~ school)
+```
+There are more students that attended `GP` vs. `MS`, but it appears that at both schools, higher grades are acheived by students with fewer absences, in general.  Females had the highest final grades at `MS`, whereas, males had the highest grades at `GP`.
+
+
+Last, we'll use `facet_grid` to plot final grade for all combinations each level of father's education level and mother's education level; 
+```{r}
+g7 <- ggplot(td4, aes(G3.x, absences.x))
+g7 + geom_point() +
+  facet_grid(vars(Fedu), vars(Medu)) +
+  labs(title="Influence of Parents Education Levels on Final Grade relative to Absences")
+```
+Regardless of the parents' education level, there seems to be some peak of absences near a final grade of 10, with higher final grades being achieved by students who missed fewer days of school (generally).
 
